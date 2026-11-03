@@ -61,6 +61,8 @@
 
 
   /* ---------- ПЛАВАЮЩИЙ НАВБАР (появляется после хиро) ---------- */
+  .pill{pointer-events:none}
+  .pill .bar,.pill.open .panel{pointer-events:auto}
   .pill{position:fixed;left:50%;top:calc(14 * var(--u));z-index:50;width:clamp(340px, calc(620 * var(--u)), 680px);
     transform:translate(-50%,-160%);opacity:0;transition:transform .6s var(--ease),opacity .4s ease;font-size:clamp(12px, calc(18 * var(--u)), 18px);line-height:1.4}
   .pill.show,.pill.open{transform:translate(-50%,0);opacity:1}
@@ -154,6 +156,14 @@
     padding-left:calc(239 * var(--u));
   }
   .row.cur{font-weight:500}
+  .works .row > span{justify-self:start;align-self:center;padding:calc(5 * var(--u)) calc(10 * var(--u));margin-left:calc(-10 * var(--u));border-radius:4px;
+    background:rgba(234,234,234,.5);-webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);transition:background .5s ease}
+  .works .stick.dark .row > span{background:rgba(13,13,13,.42)}
+  .works .row:not(.cur) > span{background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .works .all > span,.works .hint,.works .count{padding:calc(5 * var(--u)) calc(10 * var(--u));border-radius:4px;background:rgba(234,234,234,.5);-webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2)}
+  .works .all{left:calc(var(--m) - 10 * var(--u))}.works .hint{left:calc(var(--m) - 10 * var(--u))}
+  .works .stick.dark .all > span,.works .stick.dark .hint,.works .stick.dark .count{background:rgba(13,13,13,.42)}
+  .works .win{text-shadow:none !important}
   .works .stick{cursor:pointer}
   .row{cursor:pointer}
   .works .all{position:absolute;left:var(--m);top:calc(90 * var(--u));text-decoration:underline;text-underline-offset:.2em;z-index:2}
@@ -271,6 +281,7 @@
   .acc{width:calc(1030 * var(--u));margin:calc(53 * var(--u)) auto 0;border-bottom:1px solid rgba(13,13,13,.15)}
   .qi{border-top:1px solid rgba(13,13,13,.15)}
   .q{width:100%;display:flex;justify-content:space-between;align-items:center;gap:calc(24 * var(--u));text-align:left;padding:calc(22 * var(--u)) 0}
+  .q > *{pointer-events:none}
   .q .pl{flex:none;transition:transform .4s var(--ease)}
   .qi.open .pl{transform:rotate(45deg)}
   .a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--ease)}
@@ -439,7 +450,7 @@
     .fcols{grid-template-columns:1fr 1fr;row-gap:40px}
     .fcol h4{margin-bottom:16px}
     .f3d{grid-column:1/-1;order:5;margin:0}.f3d .logo3d{width:70vw}
-    .ov-title{font-size:40px}.cs-grid{grid-template-columns:1fr}.cs-desc{font-size:18px}.cs-next span:last-child{font-size:26px}
+    .ov-title{font-size:40px}.cs-grid{grid-template-columns:1fr}.cs-desc{font-size:18px;max-width:none}.cs-two{grid-template-columns:1fr}.ov-body{padding:24px var(--m) 80px}.cs-next span:last-child{font-size:26px}
     .ix-row{grid-template-columns:2.2em 1fr auto;gap:8px;padding:12px 0}.ix-row span:nth-child(3),.ix-row span:nth-child(4){display:none}
     .works .all{position:static;display:block;margin-bottom:20px}.works .hint{display:none}
     .fcol:last-child{justify-self:start;grid-column:1/-1}
@@ -484,8 +495,7 @@
     .mw{display:block}
     .mw-img > img{transform:scale(1.12);transition:transform 1.6s var(--ease)}
     .mw.m-in .mw-img > img{transform:none}
-    .services li{transform:translateX(-12px) !important;transition:opacity .4s,transform .6s var(--ease) !important}
-    .services li.on{transform:none !important}
+    .services li{transform:none !important;transition:opacity .4s !important}
   }
   @media (min-width: 600px) and (max-width: 1023px){
     :root{--m:32px}
@@ -526,9 +536,87 @@
   .cd.now::after{display:none}
   .cd b{position:static;margin-top:0}
   @media (max-width: 1023px){.cd span{font-size:10px}.cd em{font-size:9px}.cd b{font-size:9px}.cd{padding-top:4px;gap:4px}}
+
+  /* ---------- Прелоадер ---------- */
+  html.pre,html.pre body{overflow:hidden}
+  #pre{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
+    clip-path:inset(0 0 0 0);transition:clip-path 1s cubic-bezier(.76,0,.24,1)}
+  #pre.out{clip-path:inset(0 0 100% 0)}
+  #pre canvas{width:min(64vw, 560px);aspect-ratio:144/108;display:block}
+  #pre .pre-meta{width:min(64vw, 560px);display:flex;justify-content:space-between;font-size:clamp(11px, calc(14 * var(--u)), 14px);color:rgba(13,13,13,.55)}
+  #pre .pre-meta b{font-weight:400;color:var(--ink)}
 </style>
 </head>
 <body>
+<div id="pre" aria-hidden="true"><canvas></canvas><div class="pre-meta"><span>object 02</span><b id="preN">000%</b></div></div>
+<script>
+/* ASCII-прелоадер: логотип собирается из символов, счётчик до 100%, потом шторка уходит вверх */
+(() => {
+  const pre = document.getElementById('pre'), cv = pre.querySelector('canvas'), ctx = cv.getContext('2d'), num = document.getElementById('preN');
+  document.documentElement.classList.add('pre');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DUR = reduce ? 300 : 1900; window.__preDur = DUR + 350;
+  const logo = new Path2D('M42 0H119Q123 0 126 3L140 18Q144 22 144 27V64Q144 69 140 73L104 105Q101 108 96 108H22Q17 108 14 104L3 92Q0 89 0 84V45Q0 41 3 37L38 3Q40 0 42 0ZM47 27Q44 27 42 29L34 37Q31 40 31 44V73Q31 80 38 80H89Q93 80 96 77L109 65Q112 62 112 58V34Q112 27 105 27Z');
+  const RAMP = ' .\u00b7:-=+*#%@', NOISE = '01#%&@$?/\\|<>*+=';
+  let cols, rows, cw, chh, cells;
+  const size = () => {
+    const dpr = Math.min(2, devicePixelRatio || 1), W = cv.clientWidth, H = cv.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    const fs = Math.max(7, Math.round(W / 64)) * dpr;
+    ctx.font = fs + 'px "Geist Mono", ui-monospace, monospace'; ctx.textBaseline = 'top';
+    cw = ctx.measureText('M').width; chh = fs * 1.15;
+    cols = Math.floor(cv.width / cw); rows = Math.floor(cv.height / chh);
+    const sx = 144 / (cols * cw), sy = 108 / (rows * chh);
+    const off = document.createElement('canvas'); off.width = 144; off.height = 108;
+    const o = off.getContext('2d'); o.fillStyle = '#000'; o.fill(logo, 'evenodd');
+    const d = o.getImageData(0, 0, 144, 108).data;
+    const inside = (x, y) => { x = Math.floor(x); y = Math.floor(y); return x >= 0 && y >= 0 && x < 144 && y < 108 && d[(y * 144 + x) * 4 + 3] > 128; };
+    cells = [];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const x = (c + .5) * cw * sx, y = (r + .5) * chh * sy;
+      const inn = inside(x, y);
+      const edge = inn && (!inside(x - 4, y) || !inside(x + 4, y) || !inside(x, y - 4) || !inside(x, y + 4));
+      cells.push({ c, r, inn, edge, k: Math.random() * .55 + (c / cols) * .3 + (r / rows) * .15 });
+    }
+  };
+  let t0 = null, done = false;
+  const draw = now => {
+    if (t0 === null) t0 = now;
+    const p = Math.min(1, (now - t0) / DUR);
+    num.textContent = String(Math.round(p * 100)).padStart(3, '0') + '%';
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = 'rgba(13,13,13,.88)';
+    const line = new Array(cols);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cl = cells[r * cols + c];
+        let ch = ' ';
+        if (cl.inn) {
+          const q = (p * 1.25 - cl.k) / .18;
+          if (q >= 1) {
+            const lx = c / cols - .5, ly = r / rows - .5, sh = .55 + .45 * Math.sin(lx * 5 - ly * 4 + now / 380);
+            ch = cl.edge ? '@' : RAMP[Math.min(RAMP.length - 1, 5 + Math.floor(sh * 6))];
+          } else if (q > 0) ch = NOISE[(Math.random() * NOISE.length) | 0];
+          else if (Math.random() < .05) ch = '\u00b7';
+        } else if (p < .9 && Math.random() < .015 * (1 - p)) ch = '\u00b7';
+        line[c] = ch;
+      }
+      ctx.fillText(line.join(''), 0, r * chh);
+    }
+    if (p < 1) requestAnimationFrame(draw);
+    else if (!done) {
+      done = true;
+      setTimeout(() => {
+        pre.classList.add('out');
+        document.documentElement.classList.remove('pre');
+        setTimeout(() => pre.remove(), 1100);
+      }, 250);
+    }
+  };
+  const start = () => { size(); requestAnimationFrame(draw); };
+  if (document.fonts && document.fonts.status !== 'loaded') Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 400))]).then(start); else start();
+})();
+</script>
 
 <!-- ================= ПЛАВАЮЩИЙ НАВБАР ================= -->
 <div class="pill" id="pill">
@@ -1091,8 +1179,9 @@ window.A={"cover-spa": "assets/91f601d391.jpg", "cover-university": "assets/4f9f
 
   document.querySelectorAll(CELL_LOAD + ',' + CELL_VIEW).forEach(cellsCover);
   // первый экран
-  document.querySelectorAll(TYPE_LOAD).forEach((el, i) => typeIn(el, 120 + i * 70));
-  document.querySelectorAll(CELL_LOAD).forEach((el, i) => cellsReveal(el, 350 + i * 90));
+  const PRE = window.__preDur || 0;
+  document.querySelectorAll(TYPE_LOAD).forEach((el, i) => typeIn(el, PRE + 120 + i * 70));
+  document.querySelectorAll(CELL_LOAD).forEach((el, i) => cellsReveal(el, PRE + 350 + i * 90));
   // при прокрутке
   const io = new IntersectionObserver(es => es.forEach(e => {
     if (!e.isIntersecting) return;
@@ -1706,7 +1795,7 @@ window.A={"cover-spa": "assets/91f601d391.jpg", "cover-university": "assets/4f9f
         dpr = Math.min(2, devicePixelRatio || 1);
         W = el.clientWidth; H = el.clientHeight; if (!W || !H) return;
         cv.width = W * dpr; cv.height = H * dpr;
-        const fs = Math.max(7, Math.round(W / (scroll ? 118 : 104))) * dpr;
+        const fs = Math.max(innerWidth < 1024 ? 5 : 7, Math.round(W / (scroll ? 118 : 104))) * dpr;
         ctx.font = `${fs}px "Geist Mono", ui-monospace, monospace`; ctx.textBaseline = 'top';
         cw = ctx.measureText('M').width; chh = fs * 1.2;
         cols = Math.floor(cv.width / cw); rows = Math.floor(cv.height / chh); S.rows = rows / 2;
