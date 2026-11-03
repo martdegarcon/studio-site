@@ -491,15 +491,16 @@
 
     /* движение на мобильных */
     .timeline .box{display:flex;flex-direction:column}
-    .timeline .stack{order:-1;position:sticky !important;top:64px !important;z-index:2;margin:0 0 24px;box-shadow:0 -64px 0 var(--bg),0 16px 24px -8px var(--bg)}
-    .timeline .item,.team .item{opacity:.22 !important;transition:opacity .5s ease}
+    .timeline .stack{order:2;position:relative !important;top:auto !important;z-index:auto;margin:32px 0 0;box-shadow:none}
     .timeline .stack{aspect-ratio:auto !important;height:auto !important;background:#D9D9D9}
     .timeline .stack .layer{display:none}
     .cal{position:relative;inset:auto;padding:12px;gap:10px}
     .cal-g{gap:4px;grid-auto-rows:auto;grid-template-columns:repeat(7,minmax(0,1fr))}
     .cd{min-width:0}
     .cd{min-height:36px}
-    .timeline .item.mcur,.team .item.mcur{opacity:1 !important}
+    .timeline .item,.team .item{opacity:1 !important}
+    .coop .eyebrow,.plan .l > p:first-child{display:none}
+    .plan .l h3{margin-top:0}
     .mw-img,.person .ph,.services .stack{position:relative}
     .mw{display:block}
     .mw-img > img{transform:scale(1.12);transition:transform 1.6s var(--ease)}
@@ -1532,7 +1533,13 @@ window.A={"cover-spa": "assets/91f601d391.jpg", "cover-university": "assets/4f9f
     }), {threshold: .2, rootMargin: '0px 0px -8% 0px'});
     document.querySelectorAll('.big .ln.b1, .logo-big, .stats, .mw, ' + CELLS + ', ' + TYPES).forEach(el => mio.observe(el));
     // активный шаг: «30 дней» (календарь закреплён сверху) и «Работаем напрямую»
-    const groups = [...document.querySelectorAll('#approach, #team')].map(sec => ({ sec, items: [...sec.querySelectorAll('.item')], cur: -1 }));
+    const groups = [];
+    // календарь «30 дней»: когда виден — заполняется по неделям
+    const calBox = document.querySelector('#approach .stack');
+    if (calBox) new IntersectionObserver(([e], ob) => {
+      if (!e.isIntersecting || !window.__calStep) return; ob.disconnect();
+      [1, 2, 3, 4].forEach((k, j) => setTimeout(() => window.__calStep(k), 400 + j * 700));
+    }, { threshold: .35 }).observe(calBox);
     const job = () => {
       if (desktop.matches) return;
       const line = innerHeight * .62;
