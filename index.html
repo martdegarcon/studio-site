@@ -491,6 +491,12 @@
     .timeline .box{display:flex;flex-direction:column}
     .timeline .stack{order:-1;position:sticky !important;top:64px !important;z-index:2;margin:0 0 24px;box-shadow:0 -64px 0 var(--bg),0 16px 24px -8px var(--bg)}
     .timeline .item,.team .item{opacity:.22 !important;transition:opacity .5s ease}
+    .timeline .stack{aspect-ratio:auto !important;height:auto !important;background:#D9D9D9}
+    .timeline .stack .layer{display:none}
+    .cal{position:relative;inset:auto;padding:12px;gap:10px}
+    .cal-g{gap:4px;grid-auto-rows:auto;grid-template-columns:repeat(7,minmax(0,1fr))}
+    .cd{min-width:0}
+    .cd{min-height:36px}
     .timeline .item.mcur,.team .item.mcur{opacity:1 !important}
     .mw-img,.person .ph,.services .stack{position:relative}
     .mw{display:block}
@@ -547,6 +553,19 @@
   #pre canvas{width:min(64vw, 560px);aspect-ratio:144/108;display:block}
   #pre .pre-meta{width:min(64vw, 560px);display:flex;justify-content:space-between;font-size:clamp(11px, calc(14 * var(--u)), 14px);color:rgba(13,13,13,.55)}
   #pre .pre-meta b{font-weight:400;color:var(--ink)}
+
+  /* ---------- Баннер cookies ---------- */
+  .ck{position:fixed;left:var(--m);bottom:var(--m);z-index:120;width:min(420px, calc(100vw - 2 * var(--m)));padding:16px;background:rgba(234,234,234,.9);color:var(--ink);border:1px solid rgba(13,13,13,.18);box-shadow:0 12px 40px rgba(13,13,13,.18);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:3px;font-size:clamp(11px, calc(13 * var(--u)), 13px);line-height:1.5;
+    transform:translateY(calc(100% + 40px));opacity:0;transition:transform .7s var(--ease),opacity .4s ease}
+  .ck.on{transform:none;opacity:1}
+  .ck p{text-transform:none}
+  .ck a{text-decoration:underline;text-underline-offset:.2em}
+  .ck .ck-b{display:flex;gap:8px;margin-top:14px}
+  .ck button{flex:1;padding:10px 12px;border:1px solid rgba(13,13,13,.3);color:var(--ink);transition:background .2s,color .2s,border-color .2s}
+  .ck button.y{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .ck button:hover{border-color:var(--ink)}
+  .legal nav button{color:inherit;text-transform:inherit}
 </style>
 </head>
 <body>
@@ -853,7 +872,7 @@
     <div class="qi"><button class="q" aria-expanded="false"><span data-sc>Что будет после запуска сайта?</span><span class="pl">+</span></button>
       <div class="a"><div><p>Передадим готовый сайт и необходимые доступы. При необходимости продолжим работу в формате технической поддержки и дальнейших доработок.</p></div></div></div>
     <div class="qi"><button class="q" aria-expanded="false"><span data-sc>Как начать работу?</span><span class="pl">+</span></button>
-      <div class="a"><div><p>Напишите нам в Telegram или оставьте заявку на сайте. Обсудим задачу, определим объём работ, сроки и стоимость.</p></div></div></div>
+      <div class="a"><div><p>Напишите нам в Telegram. Обсудим задачу, определим объём работ, сроки и стоимость.</p></div></div></div>
   </div>
 </section>
 
@@ -899,7 +918,7 @@
   </div>
   <div class="word"><span id="word">object 02</span></div>
   <div class="legal fmute">
-    <nav><a href="#" data-sc>Политика конфиденциальности</a></nav>
+    <nav><a href="privacy.html" data-sc>Политика конфиденциальности</a><button type="button" data-cookies data-sc>Cookies</button></nav>
     <span>© 2026 object 02. Все права защищены.</span>
   </div>
 </footer>
@@ -968,9 +987,12 @@ window.A={"cover-spa": "assets/91f601d391.jpg", "cover-university": "assets/4f9f
   }
   const scrollToY = y => lenis ? lenis.scrollTo(y, { duration: 1.4 }) : scrollTo({ top: y, behavior: 'smooth' });
   document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
-    const id = a.getAttribute('href');
     e.preventDefault();
-    scrollToY(id === '#' ? 0 : document.querySelector(id).getBoundingClientRect().top + scrollY);
+    if (a.hasAttribute('data-all-cases')) return;               // открывает список кейсов, страницу не крутим
+    const id = a.getAttribute('href'), el = id === '#' ? null : document.querySelector(id);
+    const ovEl = document.getElementById('ov');
+    if (ovEl && ovEl.classList.contains('open')) closeOv();
+    scrollToY(el ? el.getBoundingClientRect().top + scrollY : 0);
   }));
 
   /* ---------- Закреплённые секции: шаг по прокрутке ---------- */
@@ -1964,6 +1986,37 @@ window.A={"cover-spa": "assets/91f601d391.jpg", "cover-university": "assets/4f9f
       if (open) { qi.classList.add('open'); b.setAttribute('aria-expanded', 'true'); }
     });
   });
+})();
+</script>
+
+<div class="ck" id="ck" role="dialog" aria-live="polite" aria-label="Cookies">
+  <p>Мы используем cookies и Яндекс.Метрику, чтобы понимать, как работает сайт. Подробнее — в <a href="privacy.html#cookies">политике конфиденциальности</a>.</p>
+  <div class="ck-b"><button type="button" class="n" data-ck="no">Отклонить</button><button type="button" class="y" data-ck="yes">Принять</button></div>
+</div>
+<script>
+/* Cookies: Метрика подключается только после согласия */
+(() => {
+  const ID = 114050496, KEY = 'o2-consent', box = document.getElementById('ck');
+  const get = () => { try { return localStorage.getItem(KEY); } catch (e) { return null; } };
+  const set = v => { try { localStorage.setItem(KEY, v); } catch (e) {} };
+  let loaded = false;
+  const metrika = () => {
+    if (loaded || location.protocol === 'file:') return; loaded = true;
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();
+      for (var j = 0; j < document.scripts.length; j++) { if (document.scripts[j].src === r) return; }
+      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+      (window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+    ym(ID, 'init', { webvisor: true, clickmap: true, accurateTrackBounce: true, trackLinks: true });
+  };
+  const show = () => box.classList.add('on'), hide = () => box.classList.remove('on');
+  box.querySelectorAll('[data-ck]').forEach(b => b.addEventListener('click', () => {
+    const v = b.dataset.ck; set(v); hide();
+    if (v === 'yes') metrika(); else if (loaded) location.reload();
+  }));
+  document.querySelectorAll('[data-cookies]').forEach(b => b.addEventListener('click', show));
+  const c = get();
+  if (c === 'yes') metrika();
+  if (!c || /[?&]cookies/.test(location.search)) setTimeout(show, (window.__preDur || 0) + 900);
 })();
 </script>
 </body>
